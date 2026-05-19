@@ -80,7 +80,9 @@ public class PremiumRateBatchConfig {
     @Bean
     public ItemProcessor<CentCodesRecord, CentCodesRecord> expireProcessor() {
         return record -> {
-            record.setDateKey(20150331);
+            int newDateKey = 20150331;
+            record.setDateKey(newDateKey);
+            record.setCoverCodeSuper(record.getCoverCodeSuper().substring(0, 8) + String.format("%08d", newDateKey));
             record.setUpdatedAt(LocalDateTime.now());
             return record;
         };

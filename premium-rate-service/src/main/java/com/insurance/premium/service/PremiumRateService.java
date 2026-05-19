@@ -20,6 +20,7 @@ public class PremiumRateService {
     @Transactional
     public CentCodesRecord expireRecord(CentCodesRecord record, int newDateKey) {
         record.setDateKey(newDateKey);
+        record.setCoverCodeSuper(record.getCoverCodeSuper().substring(0, 8) + String.format("%08d", newDateKey));
         record.setUpdatedAt(LocalDateTime.now());
         return repository.save(record);
     }

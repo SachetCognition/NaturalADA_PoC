@@ -39,7 +39,7 @@ public class ReportController {
             ));
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
-                    .body(Map.of("status", "FAILED", "error", e.getMessage()));
+                    .body(Map.of("status", "FAILED", "error", e.getMessage() != null ? e.getMessage() : e.getClass().getName()));
         }
     }
 

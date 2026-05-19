@@ -26,17 +26,19 @@ class PremiumRateServiceTest {
     }
 
     @Test
-    void expireRecordShouldSetDateKey() {
-        // T-PRM-003: expireRecord sets dateKey from 99999999 to 20150331
+    void expireRecordShouldSetDateKeyAndUpdateCoverCodeSuper() {
+        // T-PRM-003: expireRecord sets dateKey from 99999999 to 20150331 and updates coverCodeSuper
         CentCodesRecord record = new CentCodesRecord();
         record.setDateKey(99999999);
         record.setTableType((short) 150);
+        record.setCoverCodeSuper("150110AU99999999");
 
         when(repository.save(any(CentCodesRecord.class))).thenAnswer(inv -> inv.getArgument(0));
 
         CentCodesRecord result = service.expireRecord(record, 20150331);
 
         assertEquals(20150331, result.getDateKey());
+        assertEquals("150110AU20150331", result.getCoverCodeSuper());
         assertNotNull(result.getUpdatedAt());
     }
 

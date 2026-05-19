@@ -38,7 +38,7 @@ public class PremiumRateController {
             return ResponseEntity.ok(Map.of("status", "STARTED"));
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
-                    .body(Map.of("status", "FAILED", "error", e.getMessage()));
+                    .body(Map.of("status", "FAILED", "error", e.getMessage() != null ? e.getMessage() : e.getClass().getName()));
         }
     }
 
