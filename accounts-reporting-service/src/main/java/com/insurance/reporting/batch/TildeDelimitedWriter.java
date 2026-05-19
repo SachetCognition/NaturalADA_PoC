@@ -51,21 +51,9 @@ public class TildeDelimitedWriter extends FlatFileItemWriter<ReportLine> {
     }
 
     private void accumulateTotals(ReportLine item) {
-        // Parse the formatted amounts back to accumulate totals
-        totalDeb.updateAndGet(v -> v.add(parseSafe(item.emPrem())));
-        totalComm.updateAndGet(v -> v.add(parseSafe(item.emComm())));
-        totalCash.updateAndGet(v -> v.add(parseSafe(item.emCash())));
-    }
-
-    private BigDecimal parseSafe(String formatted) {
-        if (formatted == null || formatted.isBlank()) {
-            return BigDecimal.ZERO;
-        }
-        try {
-            return new BigDecimal(formatted.trim());
-        } catch (NumberFormatException e) {
-            return BigDecimal.ZERO;
-        }
+        totalDeb.updateAndGet(v -> v.add(item.rawDeb() != null ? item.rawDeb() : BigDecimal.ZERO));
+        totalComm.updateAndGet(v -> v.add(item.rawComm() != null ? item.rawComm() : BigDecimal.ZERO));
+        totalCash.updateAndGet(v -> v.add(item.rawCash() != null ? item.rawCash() : BigDecimal.ZERO));
     }
 
     public BigDecimal getTotalDeb() { return totalDeb.get(); }

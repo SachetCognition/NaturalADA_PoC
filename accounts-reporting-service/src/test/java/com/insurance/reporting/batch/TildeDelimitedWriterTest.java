@@ -8,6 +8,7 @@ import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ExecutionContext;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -40,7 +41,8 @@ class TildeDelimitedWriterTest {
                 (short) 5, "Test Agent",
                 20130601, 20130715,
                 "ADDL", "   1234.56", "   -500.00", "      0.00",
-                "UNMATCHED CASH"
+                "UNMATCHED CASH",
+                new BigDecimal("1234.56"), new BigDecimal("-500.00"), BigDecimal.ZERO
         );
 
         writer.write(new Chunk<>(List.of(line)));

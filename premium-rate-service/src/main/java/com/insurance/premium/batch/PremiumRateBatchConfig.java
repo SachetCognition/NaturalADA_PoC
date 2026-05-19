@@ -9,7 +9,9 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.database.JpaItemWriter;
+import org.springframework.batch.item.database.JpaCursorItemReader;
 import org.springframework.batch.item.database.JpaPagingItemReader;
+import org.springframework.batch.item.database.builder.JpaCursorItemReaderBuilder;
 import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder;
 import org.springframework.batch.item.file.FlatFileItemWriter;
 import org.springframework.batch.item.file.builder.FlatFileItemWriterBuilder;
@@ -66,13 +68,12 @@ public class PremiumRateBatchConfig {
     // --- Step 2: R2 - Expire Active Records ---
 
     @Bean
-    public JpaPagingItemReader<CentCodesRecord> expireActiveReader() {
-        return new JpaPagingItemReaderBuilder<CentCodesRecord>()
+    public JpaCursorItemReader<CentCodesRecord> expireActiveReader() {
+        return new JpaCursorItemReaderBuilder<CentCodesRecord>()
                 .name("expireActiveReader")
                 .entityManagerFactory(entityManagerFactory)
                 .queryString("SELECT c FROM CentCodesRecord c WHERE c.tableType = :tableType AND c.coverCodeSuper LIKE :prefix AND c.dateKey = :dateKey ORDER BY c.coverCodeSuper")
                 .parameterValues(Map.of("tableType", (short) 150, "prefix", "150110%", "dateKey", 99999999))
-                .pageSize(1)
                 .build();
     }
 
