@@ -1,0 +1,4 @@
+/home/ubuntu/repos/NaturalADA-PoC/premium-rate-service/src/test/java/com/insurance/premium/repository/CentCodesRepositoryTest.java
+/home/ubuntu/repos/NaturalADA-PoC/premium-rate-service/src/test/java/com/insurance/premium/batch/PremiumRateGoldenMasterIT.java
+/home/ubuntu/repos/NaturalADA-PoC/premium-rate-service/src/test/java/com/insurance/premium/batch/PremiumRateBatchIT.java
+/home/ubuntu/repos/NaturalADA-PoC/premium-rate-service/src/test/java/com/insurance/premium/service/PremiumRateServiceTest.java

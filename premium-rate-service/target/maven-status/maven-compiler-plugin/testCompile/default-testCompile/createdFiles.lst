@@ -1,0 +1,4 @@
+com/insurance/premium/batch/PremiumRateGoldenMasterIT.class
+com/insurance/premium/repository/CentCodesRepositoryTest.class
+com/insurance/premium/batch/PremiumRateBatchIT.class
+com/insurance/premium/service/PremiumRateServiceTest.class
