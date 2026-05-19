@@ -1,0 +1,152 @@
+*********************************************************************
+*                                                                    
+RESET #EDATE(N8) #DEB(N7.2) #TYPE(A6) #S1(A1) #S2(A1) #S3(A1)        
+  #COMM(N7.2) #CASH(N7.2)                                            
+  #POL-TOP(A26) #POL-BOTTOM(A26) #COMPARE(A26)                       
+  #OLD-ACC(A18) #MAIN-AGT-KEY(A12)                                   
+  #INSPECT-NO(N2) #AG-NAME(A25) #TYPE2(A20)                          
+  #REC(A10) #BAGT(A9)                                                
+  #DEB-AMT(N12.2) #COMM-AMT(N12.2) #CASH-AMT(N12.2) #WORK(N7.2)      
+  #VALID(L) #ACC-KEY(A18) #CASH-DATE(N8)                             
+  #EM-PREM(A12) #EM-COMM(A12) #EM-CASH(A12)                          
+*                                                                    
+REDEFINE #DEB(3X #AMT(N6))                                           
+  #EDATE(#EYRM(N6))                                                  
+  #REC(#BR(A3) 1X #AGENT(A6))                                        
+  #ACC-KEY(#BCH(A3) #AGT(A6) #POL(A9))                               
+*                                                                    
+* AD WORK 1 #REC                                                     
+*                                                                    
+* RESET #BAGT                                                        
+* COMPRESS #BR #AGENT INTO #BAGT LEAVING NO SPACE                    
+* AC. READ ACCOUNTS-FILE WITH ACC-KEY = #BAGT                        
+AC. READ MULTI-FETCH 1000 ACCOUNTS-FILE BY ACC-KEY                   
+*   IF SUBSTR(ACC-KEY(AC.),1,9) NE #BAGT THEN ESCAPE BOTTOM          
+  REDEFINE METHOD-COLL(#MC1(A1) #MC2(A1))                            
+    PROCESS-MKRS(#PM1(A1) #PM2(A1))                                  
+*                                                                    
+  #ACC-KEY = ACC-KEY(AC.)                                            
+*                                                                    
+  RESET #S1 #S2 #S3 #DEB #TYPE #EDATE #COMM #CASH #TYPE2 #CASH-DATE  
+*                                                                    
+  RESET #MAIN-AGT-KEY #INSPECT-NO #AG-NAME #VALID                    
+  #VALID = TRUE                                                      
+  COMPRESS '10' #BCH '3' #AGT INTO #MAIN-AGT-KEY LEAVING NO SPACE    
+  AG. FIND AGENT-CONTROLS WITH MAIN-AGT-KEY = #MAIN-AGT-KEY          
+*   IF STATUS(AG.) = 'A' DO                                          
+    IF STATUS(AG.) NE 'A' DO                                         
+*   IF STATUS(AG.) = 'A' OR= 'B' DO   /* RUN FOR CANCELLED AGENCIES  
+      #VALID = FALSE                                                   
+    DOEND                                                              
+    #INSPECT-NO = INSPECT-NO(AG.)                                      
+    #AG-NAME    = NAME(AG.)                                            
+  LOOP                                                                 
+  IF #VALID = FALSE THEN ESCAPE TOP                                    
+*                                                                      
+  #EDATE = ENTRY-DATE(AC.)                                             
+  IF (#EDATE < 20131199)                                             
+    AND (#MC1 NE 'R' AND #MC1 NE 'X' AND #MC1 NE 'S')                
+      AND (#MC1 NE 'R' AND #MC1 NE 'X')                              
+    AND (ENTRY-TYPE(AC.) NE 'R')              /* ACCRUED COMMISSION  
+*   AND (ENTRY-TYPE(AC.) = 'R')              /* ACCRUED COMMISSION   
+  THEN DO                                                            
+    WRITE '='#EYRM '='#MC1                                           
+*                                                                    
+    RESET #TYPE #TYPE2                                               
+    DECIDE ON FIRST VALUES ENTRY-TYPE                                
+      VALUES 'E'                                                     
+        #TYPE = 'ADDL'                                               
+      VALUES 'F'                                                     
+        #TYPE = 'RETN'                                               
+      VALUES 'B'                                                     
+        #TYPE = 'RENL'                                               
+      VALUES 'C'                                                     
+        #TYPE = 'NEW'                                                
+      VALUES 'M'                                                     
+        #TYPE = 'DEP'           /* DEPOSIT CASH                      
+      NONE                                                           
+        IGNORE                                                       
+    END-DECIDE                                                       
+    DECIDE ON FIRST VALUES #MC1                                      
+      VALUES 'S'                                                     
+        #TYPE2 = 'SETTLED'                                           
+      VALUES 'R'                                                     
+        #TYPE2 = 'REDEBITED'                                         
+      VALUES 'X'                                                     
+        #TYPE2 = 'WITHDRAWN'                                         
+      VALUES 'K'                                                     
+        #TYPE2 = 'UNMATCHED CASH'                                    
+      NONE                                                           
+        IGNORE                                                       
+    END-DECIDE                                                       
+*                                                                    
+    #DEB   = DEB-CRED-AMT(AC.) / 100                                 
+    IF DEB-CRED-AMT(AC.) < 0 THEN DO                                 
+      #S1  = '-'                                                     
+*     #DEB = #DEB * -1                                                  
+    DOEND                                                               
+    #COMM  = COMM-AMOUNT(AC.) / 100                                     
+    IF COMM-AMOUNT(AC.) < 0 THEN DO                                     
+      #S2   = '-'                                                       
+*     #COMM = #COMM * -1                                                
+    DOEND                                                               
+    #CASH  = CASH-AMT(AC.) / 100                                        
+    IF CASH-AMT(AC.) < 0 THEN DO                                        
+      #S3   = '-'                                                       
+*     #CASH = #CASH * -1                                                
+    DOEND                                                               
+    RESET #WORK                                                         
+    #WORK = DEB-CRED-AMT(AC.) / 100                                     
+    #DEB-AMT  = #DEB-AMT + #WORK                                        
+    RESET #WORK                                                         
+    #WORK = COMM-AMOUNT(AC.) / 100                                      
+    #COMM-AMT = #COMM-AMT + #WORK                                       
+    RESET #WORK                                                         
+    #WORK = CASH-AMT(AC.) / 100                                         
+    #CASH-AMT = #CASH-AMT + #WORK                                       
+    #CASH-DATE = CASH-DATE(AC.)                                         
+    IF #EDATE < 1900000                                                 
+    THEN DO                                                             
+      RESET #EDATE                                                      
+    DOEND                                                               
+*                                                                       
+    RESET #EM-PREM #EM-COMM #EM-CASH                                    
+    MOVE EDITED #DEB(EM=9999999.99) TO #EM-PREM                         
+    IF #DEB < 0                                                         
+    THEN DO                                                             
+      COMPRESS '-' #EM-PREM INTO #EM-PREM LEAVING NO                    
+    DOEND                                                               
+    MOVE EDITED #COMM(EM=9999999.99) TO #EM-COMM                        
+    IF #COMM < 0                                                        
+    THEN DO                                                             
+      COMPRESS '-' #EM-COMM INTO #EM-COMM LEAVING NO                    
+    DOEND                                                               
+    MOVE EDITED #CASH(EM=9999999.99) TO #EM-CASH  
+    IF #CASH < 0                                                       
+    THEN DO                                                            
+      COMPRESS '-' #EM-CASH INTO #EM-CASH LEAVING NO                   
+    DOEND                                                              
+*                                                                      
+*                                                                      
+    WRITE '-'(72)                                                      
+    WRITE ACC-KEY ENTRY-TYPE DEB-CRED-AMT COMM-AMOUNT ENTRY-DATE       
+      CASH-AMT METHOD-COLL /  #INSPECT-NO #AG-NAME                     
+      / #DEB-AMT #COMM-AMT #CASH-AMT                                   
+*   WRITE WORK 2 VARIABLE #BCH '~' #AGT '~' #POL '~' #INSPECT-NO       
+*     '~' #AG-NAME '~' #EDATE '~' #CASH-DATE '~' #TYPE '~' #S1 #DEB '~'
+*     #S2 #COMM '~' #S3 #CASH '~' #TYPE2                               
+    WRITE WORK 1 VARIABLE #BCH '~' #AGT '~' #POL '~' #INSPECT-NO       
+      '~' #AG-NAME '~' #EDATE '~' #CASH-DATE '~' #TYPE '~' #EM-PREM '~'
+      #EM-COMM '~' #EM-CASH '~' #TYPE2                                 
+  DOEND                                                                
+*                                                                      
+LOOP(AC.)                                                              
+*                                                                      
+* OP                                                                   
+*                                                                      
+WRITE '-'(72)                                                          
+WRITE 'TOTALS' /                                                       
+  'TOTAL DEB-CRED-AMT' '='#DEB-AMT /                                   
+  'TOTAL COMM-AMOUNT ' '='#COMM-AMT /                                  
+  'TOTAL CASH-AMOUNT ' '='#CASH-AMT /                                  
+END                                                                                          

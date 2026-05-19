@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Natural/Adabas Program Explorer</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f5f5f5; color: #333; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+    h1 { color: #1a1a2e; margin-bottom: 0.5rem; }
+    .subtitle { color: #666; margin-bottom: 2rem; }
+    .program-card {
+      background: #fff; border-radius: 8px; padding: 1.5rem;
+      margin-bottom: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .program-card h2 { color: #16213e; margin-bottom: 0.5rem; }
+    .program-card h2 a { color: inherit; text-decoration: none; }
+    .program-card h2 a:hover { text-decoration: underline; }
+    .badge {
+      display: inline-block; padding: 0.2rem 0.6rem; border-radius: 4px;
+      font-size: 0.8rem; font-weight: 600; margin-right: 0.5rem;
+    }
+    .badge-structured { background: #e8f5e9; color: #2e7d32; }
+    .badge-reporting { background: #e3f2fd; color: #1565c0; }
+    .stats { display: flex; gap: 2rem; margin-top: 1rem; flex-wrap: wrap; }
+    .stat { text-align: center; }
+    .stat-value { font-size: 1.5rem; font-weight: 700; color: #1a1a2e; }
+    .stat-label { font-size: 0.85rem; color: #666; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th { background: #f0f0f0; text-align: left; padding: 0.5rem; font-size: 0.85rem; }
+    td { padding: 0.5rem; border-bottom: 1px solid #eee; font-size: 0.85rem; }
+    .ops-table { margin-top: 0.5rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Natural/Adabas Program Explorer</h1>
+    <p class="subtitle">Legacy insurance administration system — program analysis dashboard</p>
+
+    {% if not programs %}
+      <p>No programs found in the programs/ directory.</p>
+    {% endif %}
+
+    {% for prog in programs %}
+      {% set a = prog.analysis %}
+      <div class="program-card">
+        <h2><a href="/program/{{ prog.stem }}">{{ a.file_name }}</a></h2>
+        <span class="badge {% if a.mode.value == 'Structured' %}badge-structured{% else %}badge-reporting{% endif %}">
+          {{ a.mode.value }} Mode
+        </span>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-value">{{ a.variables | length }}</div>
+            <div class="stat-label">Variables</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">{{ a.views | length }}</div>
+            <div class="stat-label">DB Views</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">{{ a.operations | length }}</div>
+            <div class="stat-label">DB Operations</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">{{ a.source_lines | length }}</div>
+            <div class="stat-label">Source Lines</div>
+          </div>
+        </div>
+
+        {% if a.operations %}
+        <table class="ops-table">
+          <thead><tr><th>Operation</th><th>Label</th><th>Target</th><th>Descriptor</th></tr></thead>
+          <tbody>
+            {% for op in a.operations %}
+            <tr>
+              <td>{{ op.operation.value }}</td>
+              <td>{{ op.label or '—' }}</td>
+              <td>{{ op.target or '—' }}</td>
+              <td>{{ op.descriptor or '—' }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+</body>
+</html>
