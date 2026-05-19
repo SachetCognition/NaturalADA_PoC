@@ -1,0 +1,106 @@
+   0010 *                                                                       
+   0020 *                  
+   0030 DEFINE DATA LOCAL                                                       
+   0040 *                                                                       
+   0050 *                                                                       
+   0060 1 CENT-CODES-FILE2 VIEW OF CENT-CODES-FILE2                             
+   0070 * 2 DATE-SUPER                                                          
+   0080   2 TABLE-TYPE                                                          
+   0090   2 DATE-KEY                                                            
+   0100   2 TP-PREMIUM(1:10)                                                    
+   0110   2 COVER-CODE-SUPER                                                    
+   0120   2 PREMIUM                                                             
+   0130   2 COV-GRP-KEY                                                         
+   0140   2 INVTYPE                                                             
+   0150 *                                                                       
+   0160 1 CCF VIEW OF CENT-CODES-FILE2                                          
+   0170   2 TABLE-TYPE                                                          
+   0180   2 DATE-KEY                                                            
+   0190   2 TP-PREMIUM(1:10)                                                    
+   0200   2 COV-GRP-KEY                                                         
+   0210   2 INVTYPE                                                             
+   0220   2 PREMIUM                                                             
+   0230 *                                                                       
+   0240 1 #COV-SUPER(A16)                                                       
+   0250 1 REDEFINE #COV-SUPER                                                   
+   0260   2 #C-TAB(N3)                                                          
+   0270   2 #C-COVG(N3)                                                         
+   0280   2 REDEFINE #C-COVG                                                    
+   0290     3 #C-COV(N1)                                                        
+   0300     3 #C-GRP(N2)                                                        
+   0310   2 #C-AREA(A2)                                                         
+   0320   2 #C-DATE(N8)                                                         
+   0330 *                                                                       
+   0340 1 #DATE-2015-MAR(N8)                                                    
+   0350 1 #DATE-9999(N8)                                                        
+   0360 *                                                                       
+   0370 END-DEFINE                                                              
+   0380 *                                                                       
+   0390 * FOR MO POLS - BASE PREM                                               
+   0400 #DATE-2015-MAR := 20150331                                              
+   0410 #DATE-9999     := 99999999                                              
+   0420 *                                                                       
+   0430 MOVE 150 TO #C-TAB                                                      
+   0440 MOVE 1 TO #C-COV                                                        
+   0450 MOVE 10 TO #C-GRP                                                       
+   0460 *                                                                       
+   0470 * Write the table values before update                                  
+   0480 *                                                                       
+   0490 R1. READ CENT-CODES-FILE2 BY COVER-CODE-SUPER STARTING FROM #COV-SUPER  
+   0500   IF TABLE-TYPE NE 150 ESCAPE BOTTOM END-IF                             
+   0510 * IF DATE-KEY NE 99999999 ESCAPE TOP END-IF                             
+   0520   WRITE COVER-CODE-SUPER '=' TP-PREMIUM(1) '=' PREMIUM '=' INVTYPE      
+   0530     '=' COV-GRP-KEY                                                     
+   0540   WRITE WORK FILE 1 COVER-CODE-SUPER TP-PREMIUM(1) PREMIUM INVTYPE      
+   0550     COV-GRP-KEY                                                         
+   0560 END-READ                                                                
+   0570 *                                                                       
+   0580 * Update record 99999999 with End date 31/03/2015                       
+   0590 *                                                                       
+   0600 R2. READ CENT-CODES-FILE2 BY COVER-CODE-SUPER STARTING FROM #COV-SUPER  
+   0610   IF TABLE-TYPE NE 150 ESCAPE BOTTOM END-IF                             
+   0620   IF DATE-KEY NE 99999999 ESCAPE TOP END-IF                             
+   0630   WRITE COVER-CODE-SUPER '=' TP-PREMIUM(1) '=' PREMIUM '=' INVTYPE      
+   0640     '=' COV-GRP-KEY                                                     
+   0650   IF DATE-KEY = #DATE-9999                                              
+   0660     G1. GET CCF *ISN(R2.)                                               
+   0670     CCF.DATE-KEY := #DATE-2015-MAR                                      
+   0680     WRITE '=' CCF.DATE-KEY 'AFTER'                                      
+   0690     UPDATE(G1.)                                                         
+   0700     END TRANSACTION                                                     
+   0710   END-IF                                                                
+   0720 END-READ                                                                
+   0730 *                                                                       
+   0740 * Store New record for 99999999 with new rates                          
+   0750 *                                                                       
+   0760 R3. READ CENT-CODES-FILE2 BY COVER-CODE-SUPER STARTING FROM #COV-SUPER  
+   0770   IF TABLE-TYPE NE 150 ESCAPE BOTTOM END-IF                             
+   0780   IF DATE-KEY NE #DATE-2015-MAR ESCAPE TOP END-IF                       
+   0790   WRITE COVER-CODE-SUPER '=' TP-PREMIUM(1) '=' PREMIUM '=' INVTYPE      
+   0800     '=' COV-GRP-KEY                                                     
+   0810   IF DATE-KEY = #DATE-2015-MAR                                          
+   0820     CCF.TABLE-TYPE    := CENT-CODES-FILE2.TABLE-TYPE                    
+   0830     CCF.DATE-KEY      := #DATE-9999                                     
+   0840     CCF.COV-GRP-KEY   := CENT-CODES-FILE2.COV-GRP-KEY                   
+   0850     CCF.INVTYPE       := CENT-CODES-FILE2.INVTYPE                       
+   0860     CCF.TP-PREMIUM(1) := 26667                                          
+   0870     CCF.PREMIUM       := 26667                                          
+   0880     WRITE '=' CCF.TP-PREMIUM(1) '=' CCF.PREMIUM '=' CCF.TABLE-TYPE      
+   0890       '=' CCF.DATE-KEY '=' CCF.COV-GRP-KEY '=' CCF.INVTYPE              
+   0900     STORE CCF                                                           
+   0910     END TRANSACTION                                                     
+   0920   END-IF                                                                
+   0930 END-READ                                                                
+   0940 *                                                                       
+   0950 * Write the table values after update                                   
+   0960 *                                                                       
+   0970 R4. READ CENT-CODES-FILE2 BY COVER-CODE-SUPER STARTING FROM #COV-SUPER  
+   0980   IF TABLE-TYPE NE 150 ESCAPE BOTTOM END-IF                             
+   0990 * IF DATE-KEY NE 99999999 ESCAPE TOP END-IF                             
+   1000   WRITE COVER-CODE-SUPER '=' TP-PREMIUM(1) '=' PREMIUM '=' INVTYPE      
+   1010     '=' COV-GRP-KEY                                                     
+   1020   WRITE WORK FILE 2 COVER-CODE-SUPER TP-PREMIUM(1) PREMIUM INVTYPE      
+   1030     COV-GRP-KEY                                                         
+   1040 END-READ                                                                
+   1050 *                                                                       
+   1060 END                                                                     
