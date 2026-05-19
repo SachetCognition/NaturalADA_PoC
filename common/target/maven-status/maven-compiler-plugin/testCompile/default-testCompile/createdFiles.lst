@@ -1,7 +1,0 @@
-com/insurance/common/domain/CoverCodeSuperTest.class
-com/insurance/common/domain/AccountKeyTest.class
-com/insurance/common/util/DateSanitizerTest.class
-com/insurance/common/util/AgentKeyBuilderTest.class
-com/insurance/common/mapper/MethodCollMapperTest.class
-com/insurance/common/util/AmountConverterTest.class
-com/insurance/common/mapper/EntryTypeMapperTest.class

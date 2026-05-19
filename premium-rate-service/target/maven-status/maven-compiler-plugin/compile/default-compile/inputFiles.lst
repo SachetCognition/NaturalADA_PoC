@@ -1,6 +1,0 @@
-/home/ubuntu/repos/NaturalADA-PoC/premium-rate-service/src/main/java/com/insurance/premium/batch/PremiumRateBatchConfig.java
-/home/ubuntu/repos/NaturalADA-PoC/premium-rate-service/src/main/java/com/insurance/premium/PremiumRateApplication.java
-/home/ubuntu/repos/NaturalADA-PoC/premium-rate-service/src/main/java/com/insurance/premium/service/PremiumRateService.java
-/home/ubuntu/repos/NaturalADA-PoC/premium-rate-service/src/main/java/com/insurance/premium/repository/CentCodesRepository.java
-/home/ubuntu/repos/NaturalADA-PoC/premium-rate-service/src/main/java/com/insurance/premium/domain/CentCodesRecord.java
-/home/ubuntu/repos/NaturalADA-PoC/premium-rate-service/src/main/java/com/insurance/premium/controller/PremiumRateController.java
